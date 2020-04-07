@@ -26,26 +26,56 @@ print("Welcome in Pong")
 
 playouts = []
 
-for method in ['greedy']:
-    for agent in [3]:
-        for run in [5, 35, 60]:
-            for i in range(0, 15):
-                playouts.append({
-                    'runs': run,
-                    'agent': agent,
-                    'method': method,
-                    'skip_actions': False,
-                    'exploration_parameter': 1.41
-                })
+for method in ['random']:
+    for agent in [2]:
+        for run in [60]:
+            for parameter in [1.0, 1.41, 3.0]:
+                for i in range(0, 15):
+                    playouts.append({
+                        'runs': run,
+                        'agent': agent,
+                        'method': method,
+                        'skip_actions': False,
+                        'exploration_parameter': parameter
+                    })
+
+# for method in ['random']:
+#     for agent in [2]:
+#         for run in [60]:
+#             for parameter in [True, False]:
+#                 for i in range(0, 15):
+#                     playouts.append({
+#                         'runs': run,
+#                         'agent': agent,
+#                         'method': method,
+#                         'skip_actions': parameter,
+#                         'exploration_parameter': 1.41
+#                     })
+#
+# for method in ['greedy']:
+#     for agent in [2]:
+#         for run in [60]:
+#             for parameter in [False]:
+#                 for i in range(0, 15):
+#                     playouts.append({
+#                         'runs': run,
+#                         'agent': agent,
+#                         'method': method,
+#                         'skip_actions': parameter,
+#                         'exploration_parameter': 1.41
+#                     })
 
 for playout in playouts:
     print('Playing pong with {} runs, using {} method, against {} opponent'.format(playout['runs'], playout['method'],
                                                                                    opponent_names[
                                                                                        playout['agent']]))
     game = PongGame()
-    filename = './logss/' + playout['method'] + '-no-skip-1.41/pong-' + playout['method'] + '-' + str(
-        playout['runs']) + '-against-' + opponent_names[
+    filename = './logs-defence/' + playout['method'] + '-' + \
+               ('no-skip' if playout['exploration_parameter'] is False else 'with-skip') + \
+               '-' + str(playout['exploration_parameter']) + \
+               '/pong-' + playout['method'] + '-' + str(playout['runs']) + '-against-' + opponent_names[
                    playout['agent']] + '_' + datetime.now().strftime("%Y%m%d-%H%M%S")
+    print(filename)
     game = PongMonitor(game, filename, force=False)
     game.reset()
 

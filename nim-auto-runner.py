@@ -12,10 +12,39 @@ print("Welcome in Nim")
 
 playouts = []
 
-for piles in [2, 3, 4]:
+# for piles in [2]:
+#     for objects in [20, 40, 80]:
+#         for run in [1200]:
+#             for opponent in [1200]:
+#                 for parameter in [1.0, 1.41, 3.0]:
+#                     for i in range(0, 50):
+#                         playouts.append({
+#                             'runs': run,
+#                             'piles': piles,
+#                             'objects': objects,
+#                             'opponent': opponent,
+#                             'exploration_parameter': parameter
+#                         })
+
+# for piles in [3]:
+#     for objects in [20, 40, 80]:
+#         for run in [1200]:
+#             for opponent in [1200]:
+#                 for parameter in [1.0, 1.41, 3.0]:
+#                     for i in range(0, 50):
+#                         playouts.append({
+#                             'runs': run,
+#                             'piles': piles,
+#                             'objects': objects,
+#                             'opponent': opponent,
+#                             'exploration_parameter': parameter
+#                         })
+#
+#
+for piles in [4]:
     for objects in [20, 40, 80]:
-        for run in [1200, 600, 200, 50]:
-            for opponent in [1200, 600, 200, 50]:
+        for run in [1200]:
+            for opponent in [1200]:
                 for parameter in [1.0, 1.41, 3.0]:
                     for i in range(0, 50):
                         playouts.append({
@@ -51,7 +80,7 @@ for playout in playouts:
 
     while not game.done:
         count = count + 1
-        tree.run(1200)
+        tree.run(playout['runs'])
         action = tree.predict()
         game.act(action)
         tree.move_root(action)
@@ -60,7 +89,7 @@ for playout in playouts:
             winner = 1
             break
 
-        tree.run(1200)
+        tree.run(playout['opponent'])
         action = tree.predict()
         game.act(action)
         tree.move_root(action)
