@@ -1,4 +1,4 @@
-from mcts import Mcts
+from mcts.mcts import Mcts
 from nim.nim import Nim
 
 

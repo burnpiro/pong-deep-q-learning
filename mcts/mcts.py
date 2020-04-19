@@ -1,13 +1,12 @@
 from __future__ import annotations
-from typing import Union, Tuple, List
+from typing import Union
 import math
-from time import sleep, time
-import random
+from time import time
 from typing import List, Set, Dict, Tuple
 from nim.nim import Nim, ACTION as NIM_ACTION
 from pong.pong_game import PongGame, ACTION as PONG_ACTION
 from pong.monitor import PongMonitor
-from pd_logger import PDLogger
+from mcts.pd_logger import PDLogger
 
 EXPLORATION_PARAMETER = 1.41
 

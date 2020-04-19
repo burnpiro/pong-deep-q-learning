@@ -1,9 +1,5 @@
-from mcts import Mcts
-from pong.pong_game import PongGame
-import pandas as pd
-from time import sleep, time
-from pong.gym_agents import *
-from pd_logger import PDLogger
+from mcts.mcts import Mcts
+from mcts.pd_logger import PDLogger
 from datetime import datetime
 from nim.nim import Nim
 from pathlib import Path
