@@ -1,14 +1,6 @@
-# monte-carlo-tree-game
-Monte Carlo Tree Search for pong game
+# Q-learning for pong game
 
-### Game Samples (MCTS is P1 - on the right)
-
-##### Against "safe opponent" (tries to hit the center):
-
-![Pong Animation](./pong-game-mcts-safe.gif)
-
-##### Against "aggressive opponent" (tries to hit the edges):
-
+### Game Sample
 ![Pong Animation](./pong-game-mcts-aggressive.gif)
 
 ### Requirements
