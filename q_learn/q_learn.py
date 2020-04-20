@@ -25,7 +25,7 @@ EXP_RATE_DECAY = 0.001
 
 class QLearn:
     def __init__(self, game: GAME, exp_rate: float = START_EXP_RATE,
-                 min_exp_rate: float = MIN_EXP_RATE,
+                 min_exp_rate: float = MIN_EXP_RATE, player: int = 0,
                  exp_rate_decay: float = EXP_RATE_DECAY, max_steps: int = MAX_STEPS, num_ep: int = NUM_EP,
                  lr: float = LR, discount_rate: float = DISCOUNT_RATE):
         self.game = game
@@ -38,6 +38,7 @@ class QLearn:
         self.discount_rate = discount_rate
         self.q_table = {}
         self.reward_all_ep = []
+        self.player_num = player
 
     def select_move(self, game: GAME) -> AVAILABLE_ACTION:
         state_name = game.get_state_name()
@@ -80,7 +81,7 @@ class QLearn:
                 action_number, done, new_state, reward = self.execute_action(action, possible_actions)
 
                 if new_state not in self.q_table:
-                    self.q_table[new_state] = np.zeros(len(possible_actions))
+                    self.q_table[new_state] = np.zeros(len(self.game.possible_actions()) or 1)
 
                 self.q_table[state][action_number] = self.q_table[state][action_number] * (1 - self.lr) + self.lr * (
                         reward + self.discount_rate * np.max(self.q_table[new_state]))
@@ -96,7 +97,7 @@ class QLearn:
                 action_number, done, new_state, reward = self.execute_action(action, possible_actions)
 
                 if new_state not in self.q_table:
-                    self.q_table[new_state] = np.zeros(len(possible_actions))
+                    self.q_table[new_state] = np.zeros(len(self.game.possible_actions()) or 1)
                 state = new_state
 
                 if done != 0:

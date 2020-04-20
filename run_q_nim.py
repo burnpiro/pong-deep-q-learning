@@ -27,7 +27,7 @@ print_rewards(QL.reward_all_ep, QL.num_of_episodes)
 
 old_QL = QL
 game.set_state(state_copy, False, 0)
-QL = QLearn(game)
+QL = QLearn(game, player=1)
 QL.train(old_QL)
 
 print_rewards(QL.reward_all_ep, QL.num_of_episodes)
@@ -47,7 +47,7 @@ while True:
 
         if game.done:
             print("You lost!")
-            exit()
+            break
 
         print(game.piles)
         move = input("Your move (`pile` `objects`): ").split()
