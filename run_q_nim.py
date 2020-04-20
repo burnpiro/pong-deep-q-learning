@@ -23,8 +23,6 @@ state_copy = game.get_state()
 
 QL.train(RandomAgent())
 
-print_rewards(QL.reward_all_ep, QL.num_of_episodes)
-
 old_QL = QL
 game.set_state(state_copy, False, 0)
 QL = QLearn(game, player=1)
