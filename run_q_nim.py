@@ -3,50 +3,56 @@ from nim.nim import Nim
 import numpy as np
 from nim.random_agent import RandomAgent
 
+
+def print_rewards(rew, num_of_ep):
+    rew = np.split(np.array(rew), num_of_ep / 1000)
+    count = 1000
+
+    for r in rew:
+        print(count, ": ", str(sum(r / 1000)))
+        count += 1000
+
+
 print("Hello in Nim")
 piles, objects = input(
     "Set game settings (`number of piles` `number of objects`): ").split()
 
 game = Nim(int(piles), int(objects))
 QL = QLearn(game)
+state_copy = game.get_state()
 
 QL.train(RandomAgent())
 
-rewards = np.split(np.array(QL.reward_all_ep), QL.num_of_episodes / 100)
-count = 100
+print_rewards(QL.reward_all_ep, QL.num_of_episodes)
 
-for r in rewards:
-    print(count, ": ", str(sum(r / 100)))
-    count += 100
+old_QL = QL
+game.set_state(state_copy, False, 0)
+QL = QLearn(game)
+QL.train(old_QL)
 
-for id, item in QL.q_table.items():
-    print(id, item)
+print_rewards(QL.reward_all_ep, QL.num_of_episodes)
 
-# while not game.done:
-#     print(game.piles)
-#     # move = input("Your move (`pile` `objects`): ").split()
-#     # action = tuple(int(x) for x in move)
-#     tree.run(1200)
-#     action = tree.predict()
-#     print('CPU 0 move: %s' % str(action))
-#     game.act(action)
-#     tree.move_root(action)
-#
-#     if game.done:
-#         print("You won!")
-#         exit()
-#
-#     print(game.piles)
-#
-#     tree.run(1200)
-#     action = tree.predict()
-#     game.act(action)
-#     tree.move_root(action)
-#
-#     if tree.root._state != game.piles:
-#         print('!!!')
-#         exit()
-#
-#     print("Enemy move: "+str(action))
-#
-# print("You lost!")
+# for id, item in QL.q_table.items():
+#     print(id, item)
+
+while True:
+    print('Try yourself against QL :)')
+    game.set_state(state_copy, False, 0)
+
+    while not game.done:
+        print(game.piles)
+        action = QL.select_move(game)
+        print('CPU 0 move: %s' % str(action))
+        game.act(action)
+
+        if game.done:
+            print("You lost!")
+            exit()
+
+        print(game.piles)
+        move = input("Your move (`pile` `objects`): ").split()
+        action = tuple(int(x) for x in move)
+
+        game.act(action)
+
+    print("You won!")

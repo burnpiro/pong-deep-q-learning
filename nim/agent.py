@@ -1,7 +1,7 @@
 class Agent:
 
     @staticmethod
-    def select_mode(board, turn):
+    def select_move(board, turn):
         pass
 
     def __str__(self):

@@ -39,6 +39,16 @@ class QLearn:
         self.q_table = {}
         self.reward_all_ep = []
 
+    def select_move(self, game: GAME) -> AVAILABLE_ACTION:
+        state_name = game.get_state_name()
+        if state_name not in self.q_table:
+            self.q_table[state_name] = np.zeros(len(self.game.possible_actions()))
+
+        action_idx = np.argmax(self.q_table[state_name][:])
+        action = game.possible_actions()[int(action_idx)]
+
+        return action
+
     def execute_action(self, action, possible_actions):
         action_number = possible_actions.index(action)
         done = self.game.act(action)
@@ -81,7 +91,7 @@ class QLearn:
                 if done != 0:
                     break
 
-                action = opponent.select_mode(self.game)
+                action = opponent.select_move(self.game)
                 possible_actions = self.game.possible_actions()
                 action_number, done, new_state, reward = self.execute_action(action, possible_actions)
 
