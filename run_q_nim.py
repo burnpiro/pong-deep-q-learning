@@ -22,16 +22,19 @@ QL = QLearn(game)
 state_copy = game.get_state()
 
 QL.train(RandomAgent())
+# print_rewards(QL.reward_all_ep, QL.num_of_episodes)
 
-old_QL = QL
-game.set_state(state_copy, False, 0)
-QL = QLearn(game, player=1)
-QL.train(old_QL)
+for i in range(2):
+    old_QL = QL
+    game.set_state(state_copy, False, 0)
+    QL = QLearn(game, player=1)
+    QL.train(old_QL)
 
 print_rewards(QL.reward_all_ep, QL.num_of_episodes)
-
 # for id, item in QL.q_table.items():
 #     print(id, item)
+#
+#
 
 while True:
     print('Try yourself against QL :)')

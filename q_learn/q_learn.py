@@ -36,16 +36,23 @@ class QLearn:
         self.max_steps = max_steps
         self.lr = lr
         self.discount_rate = discount_rate
+
+        # q_table is empty to save space, states will be added on the fly when playing
         self.q_table = {}
         self.reward_all_ep = []
         self.player_num = player
 
     def select_move(self, game: GAME) -> AVAILABLE_ACTION:
         state_name = game.get_state_name()
+
+        # if during the training, agent didn't produced current state just add one and fill it with zeros
         if state_name not in self.q_table:
             self.q_table[state_name] = np.zeros(len(self.game.possible_actions()))
 
+        # get best action number from current state
         action_idx = np.argmax(self.q_table[state_name][:])
+
+        # extract action from possible states (list is always the same length and order
         action = game.possible_actions()[int(action_idx)]
 
         return action
@@ -63,8 +70,11 @@ class QLearn:
     def train(self, opponent: Agent):
         state_copy = self.game.get_state()
         for episode in range(self.num_of_episodes):
+            # Restore game at the beginning of each episode
             self.game.set_state(state_copy, False, 0)
             state = self.game.get_state_name()
+
+            # Add state to q_table if there is none
             if state not in self.q_table:
                 self.q_table[state] = np.zeros(len(self.game.possible_actions()))
             curr_reward = 0
@@ -72,14 +82,24 @@ class QLearn:
             for step in range(self.max_steps):
                 exp_rate_threshold = random.uniform(0, 1)
                 possible_actions = self.game.possible_actions()
+
+                # Check if we're exploring or selecting
                 if exp_rate_threshold > self.exp_rate:
                     action_idx = np.argmax(self.q_table[state][:])
                     action = possible_actions[int(action_idx)]
                 else:
                     action = random.choice(possible_actions)
 
+                # Execute QL action
                 action_number, done, new_state, reward = self.execute_action(action, possible_actions)
 
+                if done == 0:
+                    # Execute opponents' actions is there is still one do make
+                    action = opponent.select_move(self.game)
+                    possible_actions = self.game.possible_actions()
+                    action_number, done, new_state, reward = self.execute_action(action, possible_actions)
+
+                # add current state with possible actions to the q_table
                 if new_state not in self.q_table:
                     self.q_table[new_state] = np.zeros(len(self.game.possible_actions()) or 1)
 
@@ -92,23 +112,13 @@ class QLearn:
                 if done != 0:
                     break
 
-                action = opponent.select_move(self.game)
-                possible_actions = self.game.possible_actions()
-                action_number, done, new_state, reward = self.execute_action(action, possible_actions)
-
-                if new_state not in self.q_table:
-                    self.q_table[new_state] = np.zeros(len(self.game.possible_actions()) or 1)
-                state = new_state
-
-                if done != 0:
-                    break
-
             progress = (episode + 1) / self.num_of_episodes * 100
             sys.stdout.write('\r')
             sys.stdout.write('[%-20s] %d%%' % ('=' * int(progress / 5), int(progress)))
             sys.stdout.write('\r')
             sys.stdout.flush()
 
+            # decrease EXP_RATE
             self.exp_rate = self.min_exp_rate + (MAX_EXP_RATE - self.min_exp_rate) * np.exp(
                 -self.exp_rate_decay * episode)
             self.reward_all_ep.append(curr_reward)
