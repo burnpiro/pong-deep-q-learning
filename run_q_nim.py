@@ -2,6 +2,14 @@ from q_learn.q_learn import QLearn
 from nim.nim import Nim
 import numpy as np
 from nim.random_agent import RandomAgent
+import random
+
+
+def print_q(ql: QLearn):
+    for state in ql.q_table:
+        print(f'{state}: ')
+        for i, action in enumerate(ql.possible_actions[state]):
+            print(f'{action}: {ql.q_table[state][i]}')
 
 
 def print_rewards(rew, num_of_ep):
@@ -22,19 +30,8 @@ QL = QLearn(game)
 state_copy = game.get_state()
 
 QL.train(RandomAgent())
-# print_rewards(QL.reward_all_ep, QL.num_of_episodes)
+print_q(QL)
 
-for i in range(2):
-    old_QL = QL
-    game.set_state(state_copy, False, 0)
-    QL = QLearn(game, player=1)
-    QL.train(old_QL)
-
-print_rewards(QL.reward_all_ep, QL.num_of_episodes)
-# for id, item in QL.q_table.items():
-#     print(id, item)
-#
-#
 
 while True:
     print('Try yourself against QL :)')
