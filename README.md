@@ -1,7 +1,7 @@
 # Q-learning for pong game
 
 ### Game Sample
-![Pong Animation](./pong-game-mcts-aggressive.gif)
+**WIP**
 
 ### Requirements
 ```bash
@@ -25,7 +25,7 @@ pip install 'gym[atari]'
 ### Usage
 To start the game
 ```bash
-python nim_runner.py
+python run_q_nim.py
 ```
 
 Setup a game (3 piles and 20 randomly set objects):
@@ -33,21 +33,10 @@ Setup a game (3 piles and 20 randomly set objects):
 Set game settings (`number of piles` `number of objects`): 3 20
 ```
 
-Making a move (remove 2 objects from second pile):
-```bash
-Your move: 1 2
-```
 
 ## Pong game
+**WIP**
 
-Start game
-```bash
-python pong_runner.py
-```
-
-Setup a game (select opponent for MCTS):
-```bash
-Select opponent for MCTS (1 - Random, 2 - Safe, 3 - Aggressive, 4 - Lazy): 2
 ```
 
 Read the instructions in the console.
