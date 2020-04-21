@@ -58,6 +58,12 @@ class Nim:
     def get_state(self):
         return self.piles.copy()
 
+    def get_state_name(self):
+        state_name = ''
+        for pile, objects in enumerate(self.piles):
+            state_name += f'({str(pile)},{str(objects)})'
+        return state_name
+
     def set_state(self, state, done, current_player):
         self.done = done
         self.current_player = current_player

@@ -1,10 +1,8 @@
-from mcts import Mcts
+from mcts.mcts import Mcts
 from pong.pong_game import PongGame
-import pandas as pd
-from pong.gym_agents import RandomAgent, AggressiveAgent, GreedyAgent
-from time import sleep, time
+from time import time
 from pong.gym_agents import *
-from pd_logger import PDLogger
+from mcts.pd_logger import PDLogger
 from datetime import datetime
 from pong.monitor import PongMonitor
 

@@ -1,7 +1,6 @@
-from mcts import Mcts
+from mcts.mcts import Mcts
 from pong.pong_game import PongGame
-from pong.gym_agents import RandomAgent, AggressiveAgent, GreedyAgent
-from time import sleep, time
+from time import time
 from pong.gym_agents import *
 from pong.monitor import PongMonitor
 
