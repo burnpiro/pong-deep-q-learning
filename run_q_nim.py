@@ -2,6 +2,7 @@ from q_learn.q_learn import QLearn
 from nim.nim import Nim
 import numpy as np
 from nim.random_agent import RandomAgent
+from nim.expert_agent import ExpertAgent
 import random
 
 
@@ -29,8 +30,9 @@ game = Nim(int(piles), int(objects))
 QL = QLearn(game)
 state_copy = game.get_state()
 
-QL.train(RandomAgent())
-print_q(QL)
+QL.train(ExpertAgent())
+print_rewards(QL.reward_all_ep, 100000)
+print()
 
 
 while True:
