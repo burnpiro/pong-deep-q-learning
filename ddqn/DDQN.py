@@ -1,9 +1,14 @@
 import tensorflow as tf
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 import numpy as np
 import random
+import os
+
+os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 
 class TransitionsStore:
@@ -21,11 +26,11 @@ class TransitionsStore:
         self.full = False
 
     def store_transition(self, state, action, reward, next_state, done):
-        assert state.shape == (self.state_size,)
-        assert next_state.shape == (self.state_size,)
-        assert type(action) == int, "type is %s" % type(action)
-        assert type(reward) == float, "type is %s" % type(reward)
-        assert type(done) == bool, "type is %s" % type(done)
+        # assert state.shape == (self.state_size,)
+        # assert next_state.shape == (self.state_size,)
+        # assert type(action) == int, "type is %s" % type(action)
+        # assert type(reward) == float, "type is %s" % type(reward)
+        # assert type(done) == bool, "type is %s" % type(done)
 
         self.states[self.current_element] = state
         self.actions[self.current_element] = action
@@ -48,22 +53,26 @@ class TransitionsStore:
 class DQN:
     def __init__(self, state_size, action_space, initial_epsilon=1.0):
         self.gamma = 0.99
+        self.initial_epsilon = initial_epsilon
         self.epsilon = initial_epsilon
-        self.epsilon_decay = 0.99999
-        self.tau = 0.01
+        # self.epsilon_decay_steps = int(1e6)//50
+        self.epsilon_min = 0.1
+        self.epsilon_decay = (initial_epsilon-self.epsilon_min)/100000
+
+        self.target_update_frequency = 100
 
         self.action_space = action_space
         self.model = build_model(state_size, action_space.n)
         self.target_model = build_model(state_size, action_space.n)
         self.target_model.set_weights(self.model.get_weights())
-        self.store = TransitionsStore(state_size, 65536)
+        self.store = TransitionsStore(state_size, int(1e6))
+
+        self._train_steps = 0
 
     def store_transition(self, state, action, reward, next_state, done):
         self.store.store_transition(state, action, reward, next_state, done)
 
     def act(self, state):
-        self.epsilon *= self.epsilon_decay
-
         if random.random() < self.epsilon:
             return self.action_space.sample()
         else:
@@ -71,31 +80,47 @@ class DQN:
             return int(np.argmax(q_values))
 
     def train(self, batch_size=32):
-        states, actions, rewards, next_states, dones = self.store.sample_minibatch(
-            batch_size)
-        batch_size = states.shape[0]
-        target_values = self.model.predict(states)
-        next_actions = np.argmax(self.model.predict(next_states), 1)
-        next_values = self.target_model.predict(next_states)
+        if self.store.current_element < batch_size:
+            return
 
-        for i in range(batch_size):
-            target_values[i][actions[i]] = rewards[i] + \
-                (1.-dones[i])*self.gamma*next_values[i][next_actions[i]]
+        self._train_steps += 1
 
-        return self.model.train_on_batch(states, target_values)
+        state, action, reward, new_state, done = \
+            self.store.sample_minibatch(batch_size)
+
+        next_values = self.target_model.predict(new_state)
+        values = self.model.predict(new_state)
+        target = self.model.predict(state)
+
+        max_actions = np.argmax(values, axis=1)
+
+        mb_index = np.arange(batch_size, dtype=np.int32)
+
+        target[mb_index, action] = reward + \
+            self.gamma*next_values[mb_index,
+                                   max_actions.astype(int)]*(1.-done)
+
+        self.model.fit(state, target, verbose=0)
+
+        self.epsilon = self.epsilon-self.epsilon_decay if self.epsilon > \
+            self.epsilon_min else self.epsilon_min
+
+        if self._train_steps % self.target_update_frequency == 0:
+            self.update_target()
 
     @tf.function
     def update_target(self):
-        for weights, target_weights in zip(self.model.trainable_weights, self.target_model.trainable_weights):
-            target_weights.assign(
-                target_weights*(1-self.tau) + self.tau*weights)
+        for weights, target_weights in zip(self.model.trainable_variables, self.target_model.trainable_variables):
+            target_weights.assign(weights)
 
 
 def build_model(state_size, actions_size):
     model = Sequential()
     model.add(Dense(256, activation='relu', input_shape=(state_size,)))
-    model.add(Dense(128, activation='relu'))
+    # model.add(Dropout(0.5))
+    model.add(Dense(256, activation='relu'))
+    # model.add(Dropout(0.5))
     model.add(Dense(actions_size, activation='linear'))
-    optimizer = Adam(lr=0.0001, beta_1=0.9, beta_2=0.98, epsilon=1e-8)
+    optimizer = Adam(lr=0.0005)
     model.compile(optimizer, loss='mse')
     return model

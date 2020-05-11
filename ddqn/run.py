@@ -1,27 +1,27 @@
 from DDQN import DQN
-from wrappers import partial_observation, stack_obs, reward_wrapper
+from wrappers import normalize_obs, reward_wrapper
 import numpy as np
 import random
 import gym
 import sys
 import time
 import os
+from gym.envs.atari import AtariEnv
+from gym.wrappers import Monitor
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 
 if __name__ == '__main__':
-    env = gym.make('Pong-ram-v0')
-    env = gym.wrappers.Monitor(env, '.', force=True)
-    env = partial_observation(env, [60, 59, 54, 49, 18])
-    env = stack_obs(env)
+    env = AtariEnv(frameskip=1)
+    env = Monitor(env, '.', force=True)
     env = reward_wrapper(env)
+    env = normalize_obs(env)
     dqn = DQN(env.observation_space.shape[0], env.action_space)
     dqn.model.load_weights("model2")
     dqn.epsilon = 0.0
 
-    for i in range(100000):
+    for i in range(1):
         state = env.reset()
-        state = state/255.0
         done = False
 
         rewards_sum = 0
@@ -34,7 +34,6 @@ if __name__ == '__main__':
             env.render()
             rewards_sum += reward
 
-            next_state = next_state/255.0
             state = next_state
             # time.sleep(0.1)
 
