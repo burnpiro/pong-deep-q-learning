@@ -16,22 +16,52 @@ RAM_PLAYER_1_POS = 60
 RAM_BALL_Y_POS = 54
 
 
-class reward_wrapper(gym.RewardWrapper):
+class normalize_obs(gym.ObservationWrapper):
     def __init__(self, env):
         super().__init__(env)
+
+    def observation(self, obs):
+        return (obs-127.5)/127.5
+
+
+RAM_PLAYER_1_POS = 60
+RAM_BALL_Y_POS = 54
+BOUNCE_COUNT = 17
+RAM_BALL_X_POS = 49
+
+
+class reward_wrapper(gym.Env):
+    def __init__(self, env, bounce_coeff=0.005):
+        super().__init__()
         self.env = env
+        self.prev_state = None
+        self.obs = None
+        self.observation_space = env.observation_space
+        self.action_space = gym.spaces.Discrete(4)
+        self.bounce_coeff = bounce_coeff
 
     def reward(self, rew):
-        state = self.env.obs[-2]
-        next_state = self.env.obs[-1]
-        pos = state[0]+5
-        ball_pos = state[2]
-        dist = abs(pos-ball_pos)
+        state = self.obs
+        prev_state = self.prev_state
 
-        next_pos = next_state[0]+5
-        next_ball_pos = next_state[2]
-        next_dist = abs(next_pos-next_ball_pos)
-        return (dist-next_dist)*0.01 + rew
+        diff = 0
+        if state[RAM_BALL_X_POS] > 155:
+            diff = state[BOUNCE_COUNT] - prev_state[BOUNCE_COUNT]
+
+        return diff*self.bounce_coeff + rew
+
+    def reset(self):
+        self.obs = self.env.reset()
+        self.prev_state = self.obs
+        return self.obs
+
+    def step(self, action):
+        self.prev_state = self.obs
+        self.obs, reward, done, _ = self.env.step(action)
+        return self.obs, self.reward(reward), done, {}
+
+    def render(self, mode='human'):
+        return self.env.render(mode)
 
 
 class stack_obs(gym.Env):

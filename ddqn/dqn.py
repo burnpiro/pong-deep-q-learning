@@ -7,26 +7,24 @@ import random
 import gym
 import sys
 import time
-from wrappers import partial_observation, stack_obs, reward_wrapper
-
+from wrappers import partial_observation, stack_obs, reward_wrapper, normalize_obs
+from gym.envs.atari import AtariEnv
 from DDQN import DQN
 
 
-RAM_PLAYER_1_POS = 60
-RAM_BALL_Y_POS = 54
-
-
 if __name__ == '__main__':
-    env = gym.make('Pong-ram-v0')
-    env = partial_observation(env, [60, 59, 54, 49, 18])
-    env = stack_obs(env)
+    env = AtariEnv(frameskip=4)
     env = reward_wrapper(env)
+    env = normalize_obs(env)
+    # env = gym.make('LunarLander-v2')
 
     dqn = DQN(env.observation_space.shape[0], env.action_space)
+    dqn.model.load_weights("model2")
+    dqn.epsilon = 0.5
+    ddqn_scores = []
 
-    for i in range(100000):
-        full_state = env.reset()
-        state = full_state/255.0
+    for i in range(100000000):
+        state = env.reset()
         done = False
 
         rewards_sum = 0
@@ -36,9 +34,8 @@ if __name__ == '__main__':
         while not done:
             action = dqn.act(state)
             next_state, reward, done, _ = env.step(action)
-            env.render()
+            # env.render()
 
-            next_state = next_state/255.0
             rewards_sum += reward
 
             dqn.store_transition(
@@ -46,9 +43,12 @@ if __name__ == '__main__':
 
             state = next_state
             step += 1
-            if step % 100 == 0:
+            if step % 10 == 0:
                 dqn.train(batch_size=1024)
-                dqn.update_target()
 
-        print(i, rewards_sum, dqn.epsilon)
-        dqn.model.save_weights('model2')
+        ddqn_scores.append(rewards_sum)
+        avg_score = np.mean(ddqn_scores[max(0, i-100):(i+1)])
+
+        print(i, rewards_sum, avg_score, dqn.epsilon)
+        if i % 10 == 0:
+            dqn.model.save_weights('model2')
