@@ -20,8 +20,12 @@ class normalize_obs(gym.ObservationWrapper):
     def __init__(self, env):
         super().__init__(env)
 
-    def observation(self, obs):
+    @staticmethod
+    def convert_obs(obs):
         return (obs-127.5)/127.5
+
+    def observation(self, obs):
+        return normalize_obs.convert_obs(obs)
 
 
 RAM_PLAYER_1_POS = 60

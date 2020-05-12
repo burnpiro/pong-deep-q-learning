@@ -53,7 +53,8 @@ class MctsTree:
         prev_player = self.game.current_player
         self.game.act(action)
         new_node: MctsTree = MctsTree(
-            self.game.possible_actions(self.prev_player if self.skip_actions else None), self.game, prev_player,
+            self.game.possible_actions(
+                self.prev_player if self.skip_actions else None), self.game, prev_player,
             skip_actions=self.skip_actions)
         self.children[action] = new_node
         return new_node
@@ -121,6 +122,8 @@ class Mcts:
         for node in path:
             if (node.prev_player == 0 and score == 1) or (node.prev_player == 1 and score == -1):
                 node.wins += 1
+            if score == 0:
+                node.wins += 0.5
             node.simulations += 1
 
     def step(self) -> int:
@@ -167,4 +170,5 @@ class Mcts:
         else:
             self.root.restore_game_state()
             self.game.act(action)
-            self.root = MctsTree(self.game.possible_actions(), self.game, skip_actions=self.skip_actions)
+            self.root = MctsTree(self.game.possible_actions(
+            ), self.game, skip_actions=self.skip_actions)
