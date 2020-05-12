@@ -7,6 +7,7 @@ import time
 import os
 from gym.envs.atari import AtariEnv
 from gym.wrappers import Monitor
+from ddqn.wrappers import normalize_obs
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 NOOP = 0
@@ -23,14 +24,11 @@ class DdqnAgent:
         self.dqn.model.load_weights(model_file)
         self.dqn.epsilon = 0.0
 
-    def observation(self, obs):
-        return (obs-127.5)/127.5
-
     def act(self, observation, player=0):
         assert player == 0, 'DDQN agent works only for player 0'
         if observation is None:
             return FIRE
 
-        state = self.observation(observation)
+        state = normalize_obs.convert_obs(observation)
         action = self.dqn.act(state)
         return action
