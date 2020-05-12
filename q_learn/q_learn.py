@@ -59,22 +59,33 @@ class QLearn:
 
         return action
 
-    def execute_action(self, action, possible_actions):
+    def execute_action(self, action, possible_actions, player=1):
         action_number = possible_actions.index(action)
         done = self.game.act(action)
         new_state = self.game.get_state_name()
         reward = 0
         if done != 0:
-            reward = done
+            # because positive reward is a winning game then if QL is a second player we need to switch values
+            reward = done if player == 1 else -done
 
         return action_number, done, new_state, reward
 
-    def train(self, opponent: Agent):
+    def train(self, opponent: Agent, player: int = 1):
         state_copy = self.game.get_state()
         for episode in range(self.num_of_episodes):
             # Restore game at the beginning of each episode
             self.game.set_state(state_copy, False, 0)
             state = self.game.get_state_name()
+            done = 0
+
+            if player != 1:
+                action = opponent.select_move(self.game)
+                possible_actions = self.game.possible_actions()
+                _, done, new_state, reward = self.execute_action(
+                    action, possible_actions, player=player)
+                if done:
+                    assert reward == -1
+                    state = new_state
 
             # Add state to q_table if there is none
             if state not in self.q_table:
@@ -82,8 +93,9 @@ class QLearn:
                     len(self.game.possible_actions()))
             curr_reward = 0
 
+
             # for step in range(self.max_steps):
-            while True:
+            while done == 0:
                 exp_rate_threshold = random.uniform(0, 1)
                 possible_actions = self.game.possible_actions()
                 self.possible_actions[state] = self.game.possible_actions()
@@ -97,7 +109,7 @@ class QLearn:
 
                 # Execute QL action
                 action_number, done, new_state, reward = self.execute_action(
-                    action, possible_actions)
+                    action, possible_actions, player=player)
 
                 if done == 0:
                     assert reward == 0
@@ -105,7 +117,7 @@ class QLearn:
                     action = opponent.select_move(self.game)
                     possible_actions = self.game.possible_actions()
                     _, done, new_state, reward = self.execute_action(
-                        action, possible_actions)
+                        action, possible_actions, player=player)
                     if done:
                         assert reward == -1
                 else:
@@ -115,8 +127,7 @@ class QLearn:
                 if new_state not in self.q_table:
                     self.q_table[new_state] = np.zeros(
                         len(self.game.possible_actions()) or 1)
-                    self.possible_actions[new_state] = self.game.possible_actions(
-                    )
+                    self.possible_actions[new_state] = self.game.possible_actions()
 
                 self.q_table[state][action_number] = self.q_table[state][action_number] + self.lr * (
                     reward + self.discount_rate * np.max(self.q_table[new_state])-self.q_table[state][action_number])
