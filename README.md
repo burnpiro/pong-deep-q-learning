@@ -35,7 +35,15 @@ Set game settings (`number of piles` `number of objects`): 3 20
 
 
 ## Pong game
-**WIP**
+Run pong game against atari agent:
+```bash
+python pong_runner_ddqn_vs_agent.py
+```
+
+Run pong game against MCTS (slow):
+```bash
+python pong_runner_ddqn_vs_mcts.py
+```
 
 ```
 
