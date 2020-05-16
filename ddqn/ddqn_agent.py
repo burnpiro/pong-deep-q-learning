@@ -13,16 +13,30 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 NOOP = 0
 FIRE = 1
 UP = 2
-DOWN = 3
+DOWN = 5
+
+dqn = DQN(128, gym.spaces.Discrete(4))
+dir_ = os.path.dirname(os.path.abspath(__file__))
+model_file = os.path.join(dir_, 'model2')
+dqn.model.load_weights(model_file)
+dqn.epsilon = 0.0
+
+
+def dqn_heuristic(obs, player):
+    actions = [NOOP, FIRE, UP, DOWN]
+
+    if player == 0:
+        scale = 1
+    elif player == 1:
+        scale = -1
+    else:
+        raise Exception(f'Wrong player action {player}')
+    return {action: scale*value for action, value in zip(actions, dqn.value(obs))}
 
 
 class DdqnAgent:
     def __init__(self):
-        self.dqn = DQN(128, gym.spaces.Discrete(4))
-        dir_ = os.path.dirname(os.path.abspath(__file__))
-        model_file = os.path.join(dir_, 'model2')
-        self.dqn.model.load_weights(model_file)
-        self.dqn.epsilon = 0.0
+        pass
 
     def act(self, observation, player=0):
         assert player == 0, 'DDQN agent works only for player 0'
@@ -30,5 +44,5 @@ class DdqnAgent:
             return FIRE
 
         state = normalize_obs.convert_obs(observation)
-        action = self.dqn.act(state)
+        action = dqn.act(state)
         return action
