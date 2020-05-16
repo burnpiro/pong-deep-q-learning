@@ -79,6 +79,9 @@ class DQN:
             q_values = self.model.predict(np.expand_dims(state, 0))[0]
             return int(np.argmax(q_values))
 
+    def value(self, state):
+        return self.model.predict(np.expand_dims(state, 0))[0]
+
     def train(self, batch_size=32):
         if self.store.current_element < batch_size:
             return

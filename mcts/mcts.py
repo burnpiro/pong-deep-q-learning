@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Union
+from typing import Union, Optional
 import math
 from time import time
 from typing import List, Set, Dict, Tuple
@@ -16,7 +16,7 @@ GAME = Union[Nim, PongGame, PongMonitor]
 
 class MctsTree:
     def __init__(self, possible_actions: List[AVAILABLE_ACTION], game: GAME, prev_player: int = None,
-                 skip_actions=False) -> None:
+                 skip_actions=False, heuristic=None) -> None:
         self.children = {}
         self.possible_actions: Set[AVAILABLE_ACTION] = set(possible_actions)
         self._is_leaf: bool = True
@@ -28,6 +28,8 @@ class MctsTree:
         self.prev_player = prev_player
         self.game = game
         self.skip_actions = skip_actions
+        self.heuristic: Optional(List[float]) = heuristic(
+            game._get_obs(), self.current_player) if heuristic else None
 
     def is_leaf(self) -> bool:
         return self._terminating or bool(self.possible_actions - self.children.keys())
@@ -40,7 +42,10 @@ class MctsTree:
             win_rate = child_node.wins / child_node.simulations
             exploration = exploration_parameter * math.sqrt(
                 math.log(self.simulations) / child_node.simulations)
-            exploration_values[child_node] = win_rate + exploration
+
+            heuristic = self.heuristic[action] / \
+                (child_node.simulations+1) if self.heuristic else 0
+            exploration_values[child_node] = win_rate + exploration + heuristic
 
         return max(exploration_values, key=lambda x: exploration_values[x])
 
@@ -98,10 +103,11 @@ class MctsTree:
 
 class Mcts:
     def __init__(self, game: GAME, simulation_agent=None, max_simulation_steps=300, logger: PDLogger = None,
-                 skip_actions=False, exploration_parameter=EXPLORATION_PARAMETER) -> None:
+                 skip_actions=False, exploration_parameter=EXPLORATION_PARAMETER, heuristic=None) -> None:
         self.game: GAME = game.copy()
+        self.heuristic = heuristic
         self.root: MctsTree = MctsTree(
-            game.possible_actions(), self.game, skip_actions=skip_actions)
+            game.possible_actions(), self.game, skip_actions=skip_actions, heuristic=heuristic)
         self._exploration_parameter: float = exploration_parameter
         self.simulation_agent = simulation_agent
         self.skip_actions = skip_actions
@@ -171,4 +177,4 @@ class Mcts:
             self.root.restore_game_state()
             self.game.act(action)
             self.root = MctsTree(self.game.possible_actions(
-            ), self.game, skip_actions=self.skip_actions)
+            ), self.game, skip_actions=self.skip_actions, heuristic=self.heuristic)

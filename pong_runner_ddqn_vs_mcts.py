@@ -3,14 +3,14 @@ from pong.pong_game import PongGame
 from time import time
 from pong.gym_agents import *
 from pong.monitor import PongMonitor
-from ddqn.ddqn_agent import DdqnAgent
+from ddqn.ddqn_agent import DdqnAgent, dqn_heuristic
 
 game = PongGame()
 game = PongMonitor(game, ".", force=True)
 game.reset()
 
 mcts_agent = GreedyAgent()
-tree = Mcts(game, simulation_agent=mcts_agent)
+tree = Mcts(game, simulation_agent=mcts_agent, heuristic=dqn_heuristic)
 
 
 ddqn_agent = DdqnAgent()
@@ -21,7 +21,7 @@ while not game.done:
     game.act(action1)
     tree.move_root(action1)
 
-    tree.run(30, verbose=True)
+    tree.run(5, verbose=True)
     action2 = tree.predict()
     game.act(action2)
     tree.move_root(action2)
