@@ -1,7 +1,10 @@
 # Q-learning for pong game
 
 ### Game Sample
-**WIP**
+[FULL GAME](./videos/ddqn.mp4)
+[DDQN MCTS 5 steps](./videos/MCTS-5-steps-DDQN.mp4)
+[STANDARD MCTS 5 steps](./videos/MCTS-5-steps-STANDARD.mp4)
+[DDQN MCTS 18 steps](./videos/MCTS-18-steps-DDQN.mp4)
 
 ### Requirements
 ```bash
