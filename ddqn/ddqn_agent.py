@@ -18,8 +18,10 @@ DOWN = 5
 dqn = DQN(128, gym.spaces.Discrete(4))
 dir_ = os.path.dirname(os.path.abspath(__file__))
 model_file = os.path.join(dir_, 'model2')
+print('loading model from', model_file)
 dqn.model.load_weights(model_file)
-dqn.epsilon = 0.0
+dqn.epsilon = 0.05
+dqn.epsilon_min = 0.05
 
 
 def dqn_heuristic(obs, player):
@@ -31,6 +33,7 @@ def dqn_heuristic(obs, player):
         scale = -1
     else:
         raise Exception(f'Wrong player action {player}')
+    obs = normalize_obs.convert_obs(obs)
     return {action: scale*value for action, value in zip(actions, dqn.value(obs))}
 
 
